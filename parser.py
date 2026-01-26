@@ -1,3 +1,4 @@
+import os
 import asyncio
 import random
 from playwright.async_api import async_playwright
@@ -5,8 +6,11 @@ from bs4 import BeautifulSoup
 from supabase import create_client
 
 # Данные Supabase
-URL = "https://qenfvaqhbbqmorhvwmxg.supabase.co"
-KEY = "sb_secret_JCr9KEjlFpMBO3fymu5l-w_AHPa7qac" 
+URL = os.environ.get("SUPABASE_URL")
+KEY = os.environ.get("SUPABASE_KEY")
+if not URL or not KEY:
+    URL = "https://qenfvaqhbbqmorhvwmxg.supabase.co"
+    KEY = "sb_secret_JCr9KEjlFpMBO3fymu5l-w_AHPa7qac"
 supabase = create_client(URL, KEY)
 
 async def scrape_details(context, url):
