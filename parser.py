@@ -49,7 +49,7 @@ async def scrape_details(context, url):
 
 async def run_parser():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False) # Видим процесс
+        browser = await p.chromium.launch(headless=True) # Видим процесс
         context = await browser.new_context(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
         page = await context.new_page()
 
