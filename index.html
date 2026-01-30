@@ -3,82 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPORT KOREA | Premium Selection</title>
+    <title>IMPORT KOREA | Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
-        .car-card { background: #111; border: 1px solid #222; transition: all 0.3s ease; }
-        .car-card:hover { border-color: #ef4444; transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.3); }
+        .car-card { background: #111; border: 1px solid #222; transition: 0.3s; }
+        .car-card:hover { border-color: #ef4444; transform: translateY(-5px); }
     </style>
 </head>
 <body class="p-6 md:p-12">
-    <header class="max-w-7xl mx-auto mb-16 flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 class="text-4xl font-black tracking-tighter uppercase">
-            IMPORT <span class="text-red-600">KOREA</span>
-            <span class="text-blue-500 text-sm italic block md:inline md:ml-2">PREMIUM</span>
+    <header class="max-w-7xl mx-auto mb-16 flex justify-between items-center">
+        <h1 class="text-3xl font-black tracking-tighter uppercase">
+            IMPORT <span class="text-red-600">Korea</span> <span class="text-blue-500 text-sm italic ml-2 text-white">Premium</span>
         </h1>
-        <div class="flex items-center gap-4 text-xs text-gray-500 uppercase tracking-widest">
-            <span class="animate-pulse text-green-500">●</span> Live Inventory from Seoul
-        </div>
+        <div class="text-xs text-gray-500 uppercase tracking-widest">Live Inventory</div>
     </header>
 
-    <div id="gallery" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        <div class="col-span-full text-center py-20 text-gray-600">Подключение к базе данных Korea...</div>
+    <div id="gallery" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="col-span-full text-center py-10 text-gray-500 italic">Синхронизация с базой данных Сеула...</div>
     </div>
 
     <script>
-        // ЗАМЕНИ ЭТОТ КЛЮЧ НА СВОЙ ANON PUBLIC KEY ИЗ SUPABASE SETTINGS -> API
+        // ВАЖНО: Вставь сюда ключ sb_publishable_... со скриншота 15.07.02
         const SB_URL = "https://qenfvaqhbbqmorhvwmxg.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlbmZ2YXFoYmJxbW9yaHZ3bXhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5ODQ5MjksImV4cCI6MjA1MzU2MDkyOX0.your-actual-anon-key-here"; 
-        
+        const SB_KEY = "sb_publishable_kf8t5G8cuI8jejD6-u7AqQ_YScTnQ3X"; 
+
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
         async function loadCars() {
-            const gallery = document.getElementById('gallery');
+            const container = document.getElementById('gallery');
             try {
-                // Загружаем данные из таблицы cars
-                const { data: cars, error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('cars')
                     .select('*')
                     .order('id', { ascending: false });
 
                 if (error) throw error;
 
-                if (!cars || cars.length === 0) {
-                    gallery.innerHTML = '<div class="col-span-full text-center text-xl">База данных пуста. Запустите парсер!</div>';
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div class="col-span-full text-center text-gray-500">Машины в пути. Запустите парсер в GitHub Actions!</div>`;
                     return;
                 }
 
-                // Отрисовка карточек с данными из твоей базы
-                gallery.innerHTML = cars.map(car => `
-                    <div class="car-card rounded-3xl overflow-hidden flex flex-col">
-                        <img src="${car.image_url || 'https://via.placeholder.com/600x400/111/fff?text=Import+Korea'}" 
-                             class="w-full h-72 object-cover" 
-                             onerror="this.src='https://via.placeholder.com/600x400/111/fff?text=Photo+Coming+Soon'">
-                        <div class="p-8 flex-grow flex flex-col">
-                            <div class="text-blue-500 text-xs font-bold mb-2 uppercase tracking-tighter">Stock ID: ${car.external_id?.split('-').pop() || 'N/A'}</div>
-                            <h2 class="text-2xl font-black mb-4 uppercase leading-tight">${car.brand_model}</h2>
-                            <p class="text-gray-500 text-sm mb-8 line-clamp-2">Premium vehicle sourced directly from South Korea auctions. Verified condition.</p>
-                            
-                            <div class="mt-auto flex justify-between items-center border-t border-gray-800 pt-6">
-                                <span class="text-white font-bold text-sm">KR-EXPORT</span>
-                                <a href="${car.source_url}" target="_blank" class="bg-red-600 hover:bg-white hover:text-black text-white px-6 py-2 rounded-full text-xs font-black transition-all duration-300">
-                                    DETAILS
-                                </a>
+                container.innerHTML = data.map(car => `
+                    <div class="car-card rounded-2xl overflow-hidden flex flex-col">
+                        <img src="${car.image_url || 'https://via.placeholder.com/600x400'}" class="w-full h-64 object-cover">
+                        <div class="p-6 flex-grow">
+                            <h2 class="text-xl font-bold mb-4 uppercase">${car.brand_model}</h2>
+                            <div class="flex justify-between items-center border-t border-gray-800 pt-4 mt-auto">
+                                <span class="text-red-600 font-bold text-xs uppercase">Available</span>
+                                <a href="${car.source_url}" target="_blank" class="bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition">Смотреть</a>
                             </div>
                         </div>
                     </div>
                 `).join('');
-
             } catch (err) {
-                console.error("Supabase Error:", err);
-                gallery.innerHTML = `<div class="col-span-full text-center text-red-500 bg-red-900/20 p-4 rounded-xl">
-                    Ошибка доступа: ${err.message}. <br> Проверьте, что вы используете ANON PUBLIC KEY, а не SERVICE KEY.
-                </div>`;
+                container.innerHTML = `<div class="text-red-500 bg-red-900/20 p-4 rounded-xl">Ошибка: ${err.message}</div>`;
             }
         }
-
         loadCars();
     </script>
 </body>
