@@ -3,90 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPORT KOREA | Premium Selection</title>
+    <title>IMPORT KOREA | Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
-        .car-card { background: #111; border: 1px solid #222; transition: all 0.3s ease; }
-        .car-card:hover { border-color: #ef4444; transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.3); }
-        .img-gradient { position: relative; }
-        .img-gradient::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #111, transparent); }
+        .car-card { background: #111; border: 1px solid #222; transition: 0.3s ease; }
+        .car-card:hover { border-color: #ef4444; transform: translateY(-5px); }
     </style>
 </head>
 <body class="p-6 md:p-12">
-    <header class="max-w-7xl mx-auto mb-16 flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 class="text-4xl font-black tracking-tighter">
-            IMPORT <span class="text-red-600">KOREA</span>
-            <span class="text-blue-500 text-sm italic block md:inline md:ml-2">PREMIUM</span>
+    <header class="max-w-7xl mx-auto mb-16 flex justify-between items-center">
+        <h1 class="text-3xl font-black tracking-tighter uppercase">
+            IMPORT <span class="text-red-600">Korea</span>
+            <span class="text-blue-500 text-sm italic ml-2">Premium</span>
         </h1>
-        <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-500 uppercase tracking-widest animate-pulse">● Live Inventory</span>
-            <div id="status" class="text-xs text-green-500 font-bold"></div>
-        </div>
+        <div class="text-xs text-gray-500 uppercase tracking-widest">Live Inventory</div>
     </header>
 
-    <div id="gallery" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        <div class="col-span-full text-center py-20 text-gray-600">Загрузка эксклюзивных предложений...</div>
+    <div id="gallery" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="col-span-full text-center py-10 text-gray-500">Загрузка автомобилей...</div>
     </div>
 
     <script>
-        // Твои настройки подключения
+        // ПОДКЛЮЧЕНИЕ К ТВОЕЙ БАЗЕ
         const SB_URL = "https://qenfvaqhbbqmorhvwmxg.supabase.co";
-        const SB_KEY = "sb_secret_JCr9KEjlFpMBO3fymu5l-w_AHPa7qac"; // Твой Anon Key
-        
-        const supabase = supabase.createClient(SB_URL, SB_KEY);
+        const SB_KEY = "sb_secret_JCr9KEjlFpMBO3fymu5l-w_AHPa7qac"; // Твой ключ
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        async function loadCars() {
-            const gallery = document.getElementById('gallery');
-            const status = document.getElementById('status');
+        async function getCars() {
+            const { data, error } = await _supabase
+                .from('cars')
+                .select('*')
+                .order('id', { ascending: false });
 
-            try {
-                // Тянем данные из таблицы cars
-                const { data: cars, error } = await supabase
-                    .from('cars')
-                    .select('*')
-                    .order('id', { ascending: false });
+            const container = document.getElementById('gallery');
+            
+            if (error) {
+                container.innerHTML = `<div class="text-red-500">Ошибка: ${error.message}</div>`;
+                return;
+            }
 
-                if (error) throw error;
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="text-gray-500">В базе пока нет авто. Запусти парсер в GitHub Actions!</div>`;
+                return;
+            }
 
-                if (!cars || cars.length === 0) {
-                    gallery.innerHTML = '<div class="col-span-full text-center text-xl">База данных пуста. Запусти парсер!</div>';
-                    return;
-                }
-
-                status.innerText = `Найдено авто: ${cars.length}`;
-
-                // Рисуем карточки
-                gallery.innerHTML = cars.map(car => `
-                    <div class="car-card rounded-3xl overflow-hidden flex flex-col">
-                        <div class="img-gradient">
-                            <img src="${car.image_url || 'https://via.placeholder.com/600x400/111/fff?text=No+Image'}" 
-                                 class="w-full h-72 object-cover" 
-                                 onerror="this.src='https://via.placeholder.com/600x400/111/fff?text=Image+Error'">
-                        </div>
-                        <div class="p-8 flex-grow flex flex-col">
-                            <div class="text-blue-500 text-xs font-bold mb-2 uppercase tracking-tighter">Available in Korea</div>
-                            <h2 class="text-2xl font-black mb-4 uppercase leading-tight">${car.brand_model}</h2>
-                            <p class="text-gray-500 text-sm mb-8 line-clamp-2">${car.description || 'Verified premium vehicle from South Korea.'}</p>
-                            
-                            <div class="mt-auto flex justify-between items-center border-t border-gray-800 pt-6">
-                                <span class="text-white font-bold">READY</span>
-                                <a href="${car.source_url}" target="_blank" class="bg-red-600 hover:bg-white hover:text-black text-white px-6 py-2 rounded-full text-xs font-black transition-all duration-300">
-                                    VIEW DETAILS
-                                </a>
-                            </div>
+            // ГЕНЕРАЦИЯ КАРТОЧЕК
+            container.innerHTML = data.map(car => `
+                <div class="car-card rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                    <img src="${car.image_url || 'https://via.placeholder.com/600x400'}" class="w-full h-64 object-cover">
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h2 class="text-xl font-bold mb-2 uppercase">${car.brand_model}</h2>
+                        <p class="text-gray-400 text-sm mb-6 flex-grow leading-relaxed">
+                            ${car.description || 'Premium vehicle from South Korea. Verified quality and auction history.'}
+                        </p>
+                        <div class="flex justify-between items-center border-t border-gray-800 pt-4">
+                            <span class="text-white font-black">STOCK READY</span>
+                            <a href="${car.source_url}" target="_blank" class="bg-red-600 hover:bg-white hover:text-black text-white px-4 py-2 rounded-lg text-xs font-bold transition">
+                                ПОДРОБНЕЕ
+                            </a>
                         </div>
                     </div>
-                `).join('');
-
-            } catch (err) {
-                console.error("Ошибка Supabase:", err);
-                gallery.innerHTML = `<div class="col-span-full text-center text-red-500">Ошибка загрузки данных: ${err.message}</div>`;
-            }
+                </div>
+            `).join('');
         }
 
-        loadCars();
+        getCars();
     </script>
 </body>
 </html>
